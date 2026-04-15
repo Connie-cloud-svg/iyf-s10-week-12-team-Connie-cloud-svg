@@ -12,13 +12,16 @@ throughout IYF Weekend Academy Season 10. It allows users to create
 profiles, publish posts, interact through comments, and search for content.
 
 ## Technologies Used
+
 ### Frontend
-- HTML5
-- CSS3
+- React.js
+- HTML5 / CSS3
 - JavaScript
 
 ### Backend
-- Node.js
+- Node.js + Express.js
+- MongoDB (Database)
+- JWT (Authentication)
 
 ## Features
 - User profiles and authentication
