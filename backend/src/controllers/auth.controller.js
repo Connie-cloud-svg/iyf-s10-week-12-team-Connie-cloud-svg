@@ -5,23 +5,32 @@ const {
 } = require("../utils/generateTokens");
 const jwt = require("jsonwebtoken");
 
-const registerUser = async (req, res) => {
+const registerUser = async (req, res, next) => {
   const { name, email, password } = req.body;
+   
+  if (!name || !email || !password) {
+    return res.status(400).json({ message: "Please provide all fields" });
+  }
 
   const exists = await User.findOne({ email });
   if (exists) return res.status(409).json({ message: "User exists" });
 
   const user = await User.create({ name, email, password });
+  const { password: _, ...safeUser } = user.toObject();
 
   res.status(201).json({
-    user,
+    user: safeUser,
     accessToken: generateAccessToken(user),
     refreshToken: generateRefreshToken(user),
   });
 };
 
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Please provide all fields" });
+  }
 
   const user = await User.findOne({ email }).select("+password");
   if (!user) return res.status(401).json({ message: "Invalid credentials" });
@@ -29,8 +38,10 @@ const loginUser = async (req, res) => {
   const match = await user.comparePassword(password);
   if (!match) return res.status(401).json({ message: "Invalid credentials" });
 
+  const { password: __, ...safeUser } = user.toObject();
+
   res.json({
-    user,
+    user: safeUser,
     accessToken: generateAccessToken(user),
     refreshToken: generateRefreshToken(user),
   });
@@ -43,14 +54,22 @@ const logoutUser = async (req, res) => {
 const refreshToken = async (req, res) => {
   const { token } = req.body;
 
-  const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-  const user = await User.findById(decoded.id);
+  if (!token) {
+    return res.status(400).json({ message: "Refresh token required" });
+  }
 
-  if (!user) return res.status(401).json({ message: "Invalid user" });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.id);
 
-  res.json({
-    accessToken: generateAccessToken(user),
-  });
+    if (!user) return res.status(401).json({ message: "Invalid user" });
+
+    res.json({
+      accessToken: generateAccessToken(user),
+    });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid refresh token" });
+  }
 };
 
 module.exports = {
