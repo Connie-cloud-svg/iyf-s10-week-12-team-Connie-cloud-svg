@@ -26,6 +26,30 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+     bio: {
+      type: String,
+      default: "",
+    },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    courses: {
+      type: [String],
+      default: [],
+    },
+    cohort: {
+      type: String,
+      default: "",
+    },
+    profilePhoto: {
+      type: String,
+      default: "",
+    },
+    linkedIn: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
