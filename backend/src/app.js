@@ -13,6 +13,8 @@ const errorHandler = require("./middleware/error.middleware");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/health", healthRoutes);
+app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/opportunities', require('./routes/opportunityRoutes'));
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
