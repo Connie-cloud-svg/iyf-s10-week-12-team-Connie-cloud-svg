@@ -12,7 +12,7 @@ The platform enables students and alumni to:
 * Connect with fellow graduates
 * Discover job and internship opportunities
 * Share announcements and opportunities
-* Maintain an active learning and networking community
+* Maintain an active learning and networking community.
 
 ---
 
