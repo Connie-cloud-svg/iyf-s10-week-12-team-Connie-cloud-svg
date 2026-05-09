@@ -1,19 +1,6 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Input, Card } from '../components';
-
-// Demo user data - same as ProfilePage
-const DEMO_USER = {
-  _id: 'user1',
-  name: 'Jane Mwangi',
-  email: 'jane.mwangi@email.com',
-  bio: 'Full-stack developer passionate about building scalable web applications. IYF Academy Cohort 3 graduate with experience in React, Node.js, and cloud infrastructure. Currently working at TechCorp Nairobi and mentoring junior developers in my free time.',
-  skills: ['React', 'Node.js', 'MongoDB', 'TypeScript', 'AWS', 'Docker'],
-  courses: ['Web Development Fundamentals', 'Advanced JavaScript', 'Cloud Computing Basics', 'UI/UX Design Principles'],
-  cohort: 'Cohort 3 (2024)',
-  location: 'Nairobi, Kenya',
-  role: 'Software Engineer',
-};
 
 const EditProfilePage = () => {
   const navigate = useNavigate();
@@ -21,8 +8,6 @@ const EditProfilePage = () => {
   const [formData, setFormData] = useState({
     name: '',
     bio: '',
-    location: '',
-    role: '',
     skills: [],
     newSkill: ''
   });
@@ -33,29 +18,44 @@ const EditProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Load current user data on mount
+  // Load current user data from Cheryl's API
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // TODO: Replace with real API call
-        // const token = localStorage.getItem('token');
-        // const res = await fetch('http://localhost:5000/api/users/me', {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // });
-        // const data = await res.json();
+        const token = localStorage.getItem('token');
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        if (!token) {
+          setGeneralError('Please log in to edit your profile.');
+          setLoading(false);
+          return;
+        }
 
+        const res = await fetch('http://localhost:5000/api/users/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          setGeneralError('Session expired. Please log in again.');
+          localStorage.removeItem('token');
+          setLoading(false);
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error(`Failed to load profile: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Map backend data to form (backend has no location/role yet)
         setFormData({
-          name: DEMO_USER.name,
-          bio: DEMO_USER.bio,
-          location: DEMO_USER.location,
-          role: DEMO_USER.role,
-          skills: [...DEMO_USER.skills],
+          name: data.name || '',
+          bio: data.bio || '',
+          skills: data.skills || [],
           newSkill: ''
         });
-      } catch  {
-        setGeneralError('Failed to load profile data.');
+      } catch (err) {
+        setGeneralError(err.message || 'Failed to load profile data.');
       } finally {
         setLoading(false);
       }
@@ -118,14 +118,6 @@ const EditProfilePage = () => {
       newErrors.bio = 'Bio must be at least 20 characters';
     }
 
-    if (!formData.location.trim()) {
-      newErrors.location = 'Location is required';
-    }
-
-    if (!formData.role.trim()) {
-      newErrors.role = 'Role is required';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -139,26 +131,31 @@ const EditProfilePage = () => {
     setGeneralError('');
 
     try {
-      // TODO: Replace with real API call
-      // const token = localStorage.getItem('token');
-      // const res = await fetch('http://localhost:5000/api/users/me', {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({
-      //     name: formData.name,
-      //     bio: formData.bio,
-      //     location: formData.location,
-      //     role: formData.role,
-      //     skills: formData.skills
-      //   })
-      // });
-      // if (!res.ok) throw new Error('Failed to update profile');
+      const token = localStorage.getItem('token');
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const res = await fetch('http://localhost:5000/api/users/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          bio: formData.bio,
+          skills: formData.skills
+        })
+      });
+
+      if (res.status === 401) {
+        setGeneralError('Session expired. Please log in again.');
+        localStorage.removeItem('token');
+        setSaving(false);
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(`Failed to update profile: ${res.status}`);
+      }
 
       setSuccess(true);
       setTimeout(() => {
@@ -225,30 +222,6 @@ const EditProfilePage = () => {
                   onChange={handleChange}
                   placeholder="Your full name"
                   error={errors.name}
-                  required
-                  disabled={saving || success}
-                />
-
-                <Input
-                  label="Role / Title"
-                  name="role"
-                  type="text"
-                  value={formData.role}
-                  onChange={handleChange}
-                  placeholder="e.g., Software Engineer"
-                  error={errors.role}
-                  required
-                  disabled={saving || success}
-                />
-
-                <Input
-                  label="Location"
-                  name="location"
-                  type="text"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g., Nairobi, Kenya"
-                  error={errors.location}
                   required
                   disabled={saving || success}
                 />
