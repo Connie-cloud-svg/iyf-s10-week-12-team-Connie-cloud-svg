@@ -4,7 +4,7 @@
 
 # IYF Alumni Networking Platform
 
-A full-stack alumni networking platform designed for IYF Academy students, graduates, mentors, and administrators.
+A full-stack alumni networking platform designed for IYF Academy students, graduates, mentors and administrators.
 
 The platform enables students and alumni to:
 
