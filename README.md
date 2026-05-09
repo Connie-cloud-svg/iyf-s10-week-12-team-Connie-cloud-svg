@@ -1,7 +1,6 @@
 <p align="center">
 <img width="1536" height="1024" alt="Project Poster" src="https://github.com/user-attachments/assets/8f888405-62e4-4f0a-be62-8aff4ddfdcce" />
 </p>
----
 # IYF Alumni Networking Platform
 
 A full-stack alumni networking platform designed for IYF Academy students, graduates, mentors, and administrators.
