@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: true 
     },
 
     email: {
@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      minlength: 6,
       select: false,
     },
 
@@ -36,6 +37,17 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    cohort: {
+       type: [ String ], 
+       default: '' 
+      },
+profilePhoto: { 
+  type: [ String ],
+   default: '' 
+  },
+linkedIn: { type: [ String ], 
+  default: '' 
+}
 
   },
   {

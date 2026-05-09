@@ -1,92 +1,8 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Badge } from '../components';
 
-// Demo users - replace with API call when Cheryl's backend is ready
-const DEMO_USERS = [
-  {
-    _id: 'user1',
-    name: 'Jane Mwangi',
-    email: 'jane.mwangi@email.com',
-    bio: 'Full-stack developer passionate about building scalable web applications. IYF Academy Cohort 3 graduate.',
-    skills: ['React', 'Node.js', 'MongoDB', 'TypeScript', 'AWS', 'Docker'],
-    cohort: 'Cohort 3 (2024)',
-    location: 'Nairobi, Kenya',
-    role: 'Software Engineer',
-  },
-  {
-    _id: 'user2',
-    name: 'Peter Ochieng',
-    email: 'peter.ochieng@email.com',
-    bio: 'Backend engineer specializing in distributed systems and cloud architecture. Former Andela fellow.',
-    skills: ['Python', 'Go', 'Kubernetes', 'AWS', 'PostgreSQL'],
-    cohort: 'Cohort 2 (2023)',
-    location: 'Kisumu, Kenya',
-    role: 'Senior Backend Engineer',
-  },
-  {
-    _id: 'user3',
-    name: 'Grace Wanjiku',
-    email: 'grace.wanjiku@email.com',
-    bio: 'Mobile developer with a passion for fintech. Building apps that make financial services accessible.',
-    skills: ['Flutter', 'Dart', 'Firebase', 'Android', 'iOS'],
-    cohort: 'Cohort 4 (2025)',
-    location: 'Nairobi, Kenya',
-    role: 'Mobile Developer',
-  },
-  {
-    _id: 'user4',
-    name: 'Adebola Smith',
-    email: 'adebola.smith@email.com',
-    bio: 'UX designer and frontend developer. I believe great design is invisible and great code is poetry.',
-    skills: ['Figma', 'React', 'CSS', 'UI/UX', 'Prototyping'],
-    cohort: 'Cohort 3 (2024)',
-    location: 'Lagos, Nigeria',
-    role: 'UX Engineer',
-  },
-  {
-    _id: 'user5',
-    name: 'Samuel Kimani',
-    email: 'samuel.kimani@email.com',
-    bio: 'DevOps engineer automating everything that moves. CI/CD pipelines, infrastructure as code, monitoring.',
-    skills: ['Docker', 'Kubernetes', 'Terraform', 'AWS', 'Jenkins', 'Linux'],
-    cohort: 'Cohort 1 (2022)',
-    location: 'Nairobi, Kenya',
-    role: 'DevOps Engineer',
-  },
-  {
-    _id: 'user6',
-    name: 'Agnes Mutua',
-    email: 'agnes.mutua@email.com',
-    bio: 'Data scientist turning raw data into actionable insights. Machine learning enthusiast and mentor.',
-    skills: ['Python', 'TensorFlow', 'SQL', 'Pandas', 'Data Visualization'],
-    cohort: 'Cohort 2 (2023)',
-    location: 'Mombasa, Kenya',
-    role: 'Data Scientist',
-  },
-  {
-    _id: 'user7',
-    name: 'Dennis Okoth',
-    email: 'dennis.okoth@email.com',
-    bio: 'Full-stack developer with a focus on integration and API design. Connecting systems that speak different languages.',
-    skills: ['Node.js', 'Express', 'GraphQL', 'MongoDB', 'React'],
-    cohort: 'Cohort 3 (2024)',
-    location: 'Nakuru, Kenya',
-    role: 'Integration Engineer',
-  },
-  {
-    _id: 'user8',
-    name: 'Cheryl Achieng',
-    email: 'cheryl.achieng@email.com',
-    bio: 'Backend developer building robust APIs and database systems. Clean code advocate and code reviewer.',
-    skills: ['Java', 'Spring Boot', 'PostgreSQL', 'Redis', 'Microservices'],
-    cohort: 'Cohort 2 (2023)',
-    location: 'Nairobi, Kenya',
-    role: 'Backend Developer',
-  }
-];
-
-  // Skeleton card
+// Skeleton card
 const SkeletonCard = () => (
     <div className="card alumni-card">
       <div className="alumni-card-header">
@@ -110,18 +26,46 @@ const AlumniDirectoryPage = () => {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        // TODO: Replace with real API call
-        // const token = localStorage.getItem('token');
-        // const res = await fetch('http://localhost:5000/api/users', {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // });
-        // if (!res.ok) throw new Error('Failed to load users');
-        // const data = await res.json();
+        const token = localStorage.getItem('token');
 
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setUsers(DEMO_USERS);
-      } catch  {
-        setError('Could not load alumni directory. Please try again.');
+        if (!token) {
+          setError('Please log in to view the alumni directory.');
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch('http://localhost:5000/api/users', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          setError('Session expired. Please log in again.');
+          localStorage.removeItem('token');
+          setLoading(false);
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error(`Failed to load users: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Map backend data to frontend format (backend has no role/location yet)
+        const mappedUsers = data.map(user => ({
+          _id: user._id,
+          name: user.name,
+          bio: user.bio || 'No bio yet.',
+          skills: user.skills || [],
+          cohort: user.cohort || 'Not specified',
+          role: user.role || 'IYF Alumni',
+          location: 'Not specified', // Add to backend later if needed
+          profilePhoto: user.profilePhoto
+        }));
+
+        setUsers(mappedUsers);
+      } catch (err) {
+        setError(err.message || 'Could not load alumni directory. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -130,13 +74,13 @@ const AlumniDirectoryPage = () => {
     loadUsers();
   }, []);
 
-  // Filter users by name or skill
+  // Filter users by name, role, or skill
   const filteredUsers = users.filter(user => {
     const term = searchTerm.toLowerCase();
     return (
       user.name.toLowerCase().includes(term) ||
       user.role.toLowerCase().includes(term) ||
-      user.location.toLowerCase().includes(term) ||
+      user.cohort.toLowerCase().includes(term) ||
       user.skills.some(skill => skill.toLowerCase().includes(term))
     );
   });
@@ -157,7 +101,7 @@ const AlumniDirectoryPage = () => {
         <div className="section-header">
           <h1 className="section-title">Alumni Directory</h1>
           <p className="section-description">
-            Connect with fellow IYF Academy graduates. Search by name, role, location, or skills.
+            Connect with fellow IYF Academy graduates. Search by name, role, or skills.
           </p>
         </div>
 
@@ -171,7 +115,7 @@ const AlumniDirectoryPage = () => {
             <input
               type="text"
               className="input-field"
-              placeholder="Search by name, role, location, or skill..."
+              placeholder="Search by name, role, or skill..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -254,13 +198,6 @@ const AlumniDirectoryPage = () => {
                   </p>
 
                   <div className="alumni-meta">
-                    <span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
-                      {user.location}
-                    </span>
                     <span>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
