@@ -2,79 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Badge } from '../components';
 
-// Demo data - same as OpportunitiesPage, replace with API when ready
-const DEMO_OPPORTUNITIES = [
-  {
-    _id: '1',
-    title: 'Frontend Developer Intern',
-    company: 'TechCorp Nairobi',
-    location: 'Nairobi, Kenya',
-    type: 'Internship',
-    description: 'We are looking for a passionate frontend developer intern to join our growing team. You will work with React, TypeScript, and modern CSS frameworks to build beautiful user interfaces for our clients. This is a 6-month paid internship with potential for full-time conversion.',
-    deadline: '2026-05-15',
-    contactInfo: 'hr@techcorp.co.ke',
-    applicationLink: 'https://techcorp.co.ke/careers',
-    postedBy: { name: 'Jane Mwangi', _id: 'user1' }
-  },
-  {
-    _id: '2',
-    title: 'Senior Software Engineer',
-    company: 'Andela',
-    location: 'Remote',
-    type: 'Job',
-    description: 'Join our distributed engineering team working with Fortune 500 companies. We need experienced engineers who can lead projects and mentor junior developers. You will architect solutions, review code, and contribute to our engineering culture.',
-    deadline: '2026-06-30',
-    contactInfo: 'talent@andela.com',
-    applicationLink: 'https://andela.com/jobs',
-    postedBy: { name: 'Peter Ochieng', _id: 'user2' }
-  },
-  {
-    _id: '3',
-    title: 'Alumni Networking Event',
-    company: 'IYF Academy',
-    location: 'Virtual',
-    type: 'Announcement',
-    description: 'Join us for our quarterly virtual networking event where alumni from all cohorts come together to share experiences, discuss industry trends, and build meaningful connections. This event will feature keynote speakers from leading tech companies and breakout rooms for focused discussions.',
-    deadline: '2026-05-10',
-    contactInfo: 'events@iyf.academy',
-    postedBy: { name: 'Admin Team', _id: 'user3' }
-  },
-  {
-    _id: '4',
-    title: 'Backend Developer',
-    company: 'Safaricom',
-    location: 'Nairobi, Kenya',
-    type: 'Job',
-    description: 'Build scalable microservices and APIs that power Kenya\'s leading telecommunications platform. Experience with Node.js, Python, and cloud infrastructure required. You will work on high-availability systems serving millions of users daily.',
-    deadline: '2026-07-20',
-    contactInfo: 'careers@safaricom.co.ke',
-    applicationLink: 'https://safaricom.co.ke/careers',
-    postedBy: { name: 'Grace Wanjiku', _id: 'user4' }
-  },
-  {
-    _id: '5',
-    title: 'UX Design Internship',
-    company: 'Flutterwave',
-    location: 'Lagos, Nigeria (Remote)',
-    type: 'Internship',
-    description: 'Learn from experienced UX designers while contributing to real fintech products. You will conduct user research, create wireframes and prototypes, and collaborate with engineers to bring designs to life.',
-    deadline: '2026-05-08',
-    contactInfo: 'design@flutterwave.com',
-    postedBy: { name: 'Adebola Smith', _id: 'user5' }
-  },
-  {
-    _id: '6',
-    title: 'Mentorship Program Launch',
-    company: 'IYF Alumni Network',
-    location: 'Online',
-    type: 'Announcement',
-    description: 'We are excited to announce our new mentorship program connecting experienced alumni with recent graduates. Sign up to be a mentor or mentee and help shape the next generation of tech leaders. The program runs for 3 months with weekly check-ins and a final showcase.',
-    deadline: '2026-06-01',
-    contactInfo: 'mentorship@iyf.academy',
-    postedBy: { name: 'Connie (Project Lead)', _id: 'user6' }
-  }
-];
-
 const OpportunityDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -86,27 +13,40 @@ const OpportunityDetailPage = () => {
   useEffect(() => {
     const loadOpportunity = async () => {
       try {
-        // TODO: Replace with real API call
-        // const token = localStorage.getItem('token');
-        // const res = await fetch(`http://localhost:5000/api/opportunities/${id}`, {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // });
-        // if (!res.ok) throw new Error('NOT_FOUND');
-        // const data = await res.json();
+        const token = localStorage.getItem('token');
 
-        // Simulating API delay
-        await new Promise(resolve => setTimeout(resolve, 600));
+        if (!token) {
+          setError('Please log in to view opportunities.');
+          setLoading(false);
+          return;
+        }
 
-        const found = DEMO_OPPORTUNITIES.find(opp => opp._id === id);
-        if (!found) {
+        const res = await fetch(`http://localhost:5000/api/opportunities/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.status === 401) {
+          setError('Session expired. Please log in again.');
+          localStorage.removeItem('token');
+          setLoading(false);
+          return;
+        }
+
+        if (res.status === 404) {
           throw new Error('NOT_FOUND');
         }
-        setOpportunity(found);
+
+        if (!res.ok) {
+          throw new Error(`Failed to load opportunity: ${res.status}`);
+        }
+
+        const data = await res.json();
+        setOpportunity(data);
       } catch (err) {
         if (err.message === 'NOT_FOUND') {
           setError('NOT_FOUND');
         } else {
-          setError('Failed to load opportunity details. Please try again.');
+          setError(err.message || 'Failed to load opportunity details. Please try again.');
         }
       } finally {
         setLoading(false);

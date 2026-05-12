@@ -1,14 +1,7 @@
-// routes/userRoutes.js
-// Owner: Cheryl — User Profile Routes
-
 const express = require('express');
 const router = express.Router();
 
-// ── Using Samuel's work ──
-// protect middleware — verifies JWT token and sets req.user
 const { protect } = require('../middleware/auth.middleware');
-
-// ── Cheryl's controllers ──
 const {
   getMyProfile,
   updateMyProfile,
@@ -16,12 +9,16 @@ const {
   getUserById
 } = require('../controllers/userController');
 
-// ── Cheryl's routes ──
-// IMPORTANT: /me routes must come BEFORE /:id
-// Otherwise Express will treat the string "me" as an ID
-router.get('/',     protect, getAllUsers);    // GET  /api/users
-router.get('/me',   protect, getMyProfile);  // GET  /api/users/me
-router.put('/me',   protect, updateMyProfile); // PUT  /api/users/me
-router.get('/:id',  protect, getUserById);   // GET  /api/users/:id
+// GET /api/users - Get all users (alumni directory)
+router.get('/', protect, getAllUsers);
+
+// GET /api/users/me - Get current user's full profile
+router.get('/me', protect, getMyProfile);
+
+// PUT /api/users/me - Update current user's profile
+router.put('/me', protect, updateMyProfile);
+
+// GET /api/users/:id - Get specific user's public profile
+router.get('/:id', protect, getUserById);
 
 module.exports = router;

@@ -5,52 +5,83 @@ const {
 } = require("../utils/generateTokens");
 const jwt = require("jsonwebtoken");
 
-const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+const registerUser = async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+     
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Please provide all fields" });
+    }
 
-  const exists = await User.findOne({ email });
-  if (exists) return res.status(409).json({ message: "User exists" });
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(409).json({ message: "User exists" });
 
-  const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, password });
+    const { password: _, ...safeUser } = user.toObject();
 
-  res.status(201).json({
-    user,
-    accessToken: generateAccessToken(user),
-    refreshToken: generateRefreshToken(user),
-  });
+    const accessToken = generateAccessToken(user);
+    res.status(201).json({
+      user: safeUser,
+      token: accessToken,
+      accessToken,
+      refreshToken: generateRefreshToken(user),
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+const loginUser = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select("+password");
-  if (!user) return res.status(401).json({ message: "Invalid credentials" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide all fields" });
+    }
 
-  const match = await user.comparePassword(password);
-  if (!match) return res.status(401).json({ message: "Invalid credentials" });
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
-  res.json({
-    user,
-    accessToken: generateAccessToken(user),
-    refreshToken: generateRefreshToken(user),
-  });
+    const match = await user.comparePassword(password);
+    if (!match) return res.status(401).json({ message: "Invalid credentials" });
+
+    const { password: __, ...safeUser } = user.toObject();
+    const accessToken = generateAccessToken(user);
+
+    res.json({
+      user: safeUser,
+      token: accessToken,
+      accessToken,
+      refreshToken: generateRefreshToken(user),
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const logoutUser = async (req, res) => {
   res.json({ message: "Logout handled on client" });
 };
 
-const refreshToken = async (req, res) => {
-  const { token } = req.body;
+const refreshToken = async (req, res, next) => {
+  try {
+    const { token } = req.body;
 
-  const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-  const user = await User.findById(decoded.id);
+    if (!token) {
+      return res.status(400).json({ message: "Refresh token required" });
+    }
 
-  if (!user) return res.status(401).json({ message: "Invalid user" });
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const user = await User.findById(decoded.id);
 
-  res.json({
-    accessToken: generateAccessToken(user),
-  });
+    if (!user) return res.status(401).json({ message: "Invalid user" });
+
+    res.json({
+      accessToken: generateAccessToken(user),
+    });
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid refresh token" });
+  }
 };
 
 module.exports = {
