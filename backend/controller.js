@@ -1,13 +1,14 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/jwt");
+const asyncHandler = require("../middleware/asyncHandler");
 
-exports.register = async (req, res) => {
+exports.register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  const exists = await User.findOne({ email });
-  if (exists) {
-    return res.status(400).json({ message: "Email already exists" });
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ msg: "User already exists" });
   }
 
   const hashed = await bcrypt.hash(password, 10);
@@ -21,24 +22,24 @@ exports.register = async (req, res) => {
   res.status(201).json({
     token: generateToken(user._id)
   });
-};
+});
 
-exports.login = async (req, res) => {
+exports.login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (!user) {
-    return res.status(400).json({ message: "Invalid credentials" });
+    return res.status(400).json({ msg: "User not found" });
   }
 
   const match = await bcrypt.compare(password, user.password);
 
   if (!match) {
-    return res.status(400).json({ message: "Invalid credentials" });
+    return res.status(400).json({ msg: "Invalid password" });
   }
 
   res.json({
     token: generateToken(user._id)
   });
-};
+});
