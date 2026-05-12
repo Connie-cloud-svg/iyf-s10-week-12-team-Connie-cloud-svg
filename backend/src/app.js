@@ -7,12 +7,15 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const authRoutes = require("./routes/auth.routes");
+const authRoutes   = require("./routes/auth.routes");
 const healthRoutes = require("./routes/health.routes");
+
+const userRoutes   = require("./routes/userRoutes");
 const errorHandler = require("./middleware/error.middleware");
 
-app.use("/api/auth", authRoutes);
+app.use("/api/auth",   authRoutes);
 app.use("/api/health", healthRoutes);
+app.use("/api/users",  userRoutes);
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/opportunities', require('./routes/opportunityRoutes'));
 
