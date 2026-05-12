@@ -87,8 +87,7 @@ MongoDB Database
 
 * React.js
 * React Router
-* Axios
-* Tailwind CSS
+* CSS
 
 ---
 
@@ -107,7 +106,7 @@ MongoDB Database
 
 * Git & GitHub
 * GitHub Codespaces
-* Thunder Client / Postman
+* Postman
 * Render (Deployment)
 
 ---
@@ -116,8 +115,6 @@ MongoDB Database
 
 ```text
 iyf-s10-week-12-team-Connie-cloud-svg/
-│
-├── frontend/
 │
 ├── backend/
 │   │
@@ -151,6 +148,22 @@ Responsible for:
 * Pull request approvals
 * Project management
 * Workflow supervision
+
+  
+# 🔌 Integration
+
+## Authentication Integration
+
+* Frontend/backend authentication connection
+* Token storage
+* Session handling
+
+ 
+ ## Opportunities Integration
+
+* API integration
+* Data rendering
+* Opportunity synchronization
 
 ---
 
@@ -235,28 +248,6 @@ Responsible for:
 
 ---
 
-# 🔌 Integration Team
-
-## Dennis — Authentication Integration
-
-Responsible for:
-
-* Frontend/backend authentication connection
-* Token storage
-* Session handling
-
----
-
-## Agnes — Opportunities Integration
-
-Responsible for:
-
-* API integration
-* Data rendering
-* Opportunity synchronization
-
----
-
 # 🌿 Git Workflow Rules
 
 ## Main Branches
@@ -307,18 +298,6 @@ npm run dev
 
 ---
 
-# 🌍 Environment Variables
-
-Create `.env` inside backend:
-
-```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=supersecretkey
-```
-
----
-
 # 🚀 Deployment
 
 ## Backend
@@ -327,55 +306,11 @@ JWT_SECRET=supersecretkey
 
 ## Database
 
-* MongoDB Atlas
+* MongoDB 
 
 ## Frontend
 
-* Netlify / Vercel
-
----
-
-# 📌 Current Sprint
-
-## Sprint 1 — Authentication System
-
-Focus:
-
-* User registration
-* User login
-* JWT authentication
-* Backend deployment
-
----
-
-# 📈 Future Expansion
-
-Planned features:
-
-* Real-time messaging
-* Notifications
-* Admin dashboard
-* File uploads
-* Role-based permissions
-* Event management
-* Alumni analytics
-
----
-
-# 🤝 Contribution Workflow
-
-```bash
-git checkout -b feature/your-feature-name
-git add .
-git commit -m "Describe your feature"
-git push origin feature/your-feature-name
-```
-
-Then:
-
-* Open Pull Request
-* Request review
-* Merge after approval
+* Vercel
 
 ---
 
