@@ -116,21 +116,35 @@ MongoDB Database
 ```text
 iyf-s10-week-12-team-Connie-cloud-svg/
 │
-├── backend/
-│   │
+├── backend/                    # Express.js API
 │   ├── src/
-│   │   ├── config/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── middleware/
-│   │   ├── utils/
-│   │   ├── app.js
-│   │   └── server.js
-│   │
-│   ├── .env
+│   │   ├── app.js             # Express configuration
+│   │   ├── server.js          # Entry point
+│   │   ├── config/            # Database connection
+│   │   ├── controllers/       # Business logic (auth, user, opportunities)
+│   │   ├── models/            # Mongoose schemas (user, opportunity)
+│   │   ├── routes/            # API endpoint definitions
+│   │   ├── middleware/        # JWT auth, error handling
+│   │   └── utils/             # Token generation, helpers
+│   ├── .env.example           # Environment variables template
 │   └── package.json
 │
-└── README.md
+├── iyf-alumni-connect/         # Frontend root
+│   └── alumni-hub/            # React application
+│       ├── src/
+│       │   ├── components/    # Reusable UI (Navbar, buttons, cards)
+│       │   ├── pages/         # Page components (Login, Profile, etc.)
+│       │   ├── styles/        # Plain CSS files
+│       │   └── App.jsx        # Main app component
+│       └── package.json
+│
+├── frontend/                   # ⚠️ PLACEHOLDER — actual app is above
+│   └── README.md
+│
+├── docker-compose.yml          # Local MongoDB setup
+├── CONTRIBUTORS.md             # Team contributions
+├── LICENSE                     # MIT License
+└── README.md                   # This file
 ```
 
 ---
