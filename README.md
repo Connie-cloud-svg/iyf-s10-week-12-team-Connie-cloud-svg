@@ -133,9 +133,11 @@ iyf-s10-week-12-team-Connie-cloud-svg/
 │   └── alumni-hub/            # React application
 │       ├── src/
 │       │   ├── components/    # Reusable UI (Navbar, buttons, cards)
+│       │   ├── context/       # The themecontext
 │       │   ├── pages/         # Page components (Login, Profile, etc.)
 │       │   ├── styles/        # Plain CSS files
-│       │   └── App.jsx        # Main app component
+│       │   ├── App.jsx/       # Main app component
+│       │   └── Main.jsx       
 │       └── package.json
 │
 ├── frontend/                   # ⚠️ PLACEHOLDER — actual app is above
