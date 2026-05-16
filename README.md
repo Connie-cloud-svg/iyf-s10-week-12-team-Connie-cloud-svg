@@ -140,9 +140,6 @@ iyf-s10-week-12-team-Connie-cloud-svg/
 │       │   └── Main.jsx       
 │       └── package.json
 │
-├── frontend/                   # ⚠️ PLACEHOLDER — actual app is above
-│   └── README.md
-│
 ├── docker-compose.yml          # Local MongoDB setup
 ├── CONTRIBUTORS.md             # Team contributions
 ├── LICENSE                     # MIT License
