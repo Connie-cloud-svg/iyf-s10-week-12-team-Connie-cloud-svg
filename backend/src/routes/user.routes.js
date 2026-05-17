@@ -7,7 +7,7 @@ const {
   updateMyProfile,
   getAllUsers,
   getUserById
-} = require('../controllers/userController');
+} = require('../controllers/user.controller');
 
 // GET /api/users - Get all users (alumni directory)
 router.get('/', protect, getAllUsers);
