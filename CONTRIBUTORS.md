@@ -11,16 +11,6 @@ Responsible for:
 * Pull request approvals
 * Project management
 * Workflow supervision
-
-  
-# 🔌 Integration
-
-## Authentication Integration
-
-* Frontend/backend authentication connection
-* Token storage
-* Session handling
-
  
  ## Opportunities Integration
 
@@ -110,6 +100,15 @@ Responsible for:
 * Data validation
 
 ---
+
+## Dennis 
+
+## Authentication Integration
+
+* Frontend/backend authentication connection
+* Token storage
+* Session handling
+
 
 # 🌿 Git Workflow Rules
 
