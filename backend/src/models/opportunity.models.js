@@ -106,7 +106,7 @@ opportunitySchema.pre("save", function (next) {
   next();
 });
 
-
+// Static method for search
 opportunitySchema.statics.search = async function (query, options = {}) {
   const { type, page = 1, limit = 10 } = options;
   const searchQuery = {};

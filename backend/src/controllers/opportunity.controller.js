@@ -1,25 +1,29 @@
 const Opportunity = require("../models/opportunity.model");
 const mongoose = require("mongoose");
+const { AppError } = require("../middleware/error.middleware");
 
-
+// Validation helpers
 const validateObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const validateOpportunityInput = (body, isUpdate = false) => {
   const errors = [];
   const { title, company, location, type, description, deadline, contactInfo, applicationLink } = body;
 
-
+  // Required fields (skip for updates if not provided)
   if (!isUpdate || body.hasOwnProperty("title")) {
     if (!title?.trim()) errors.push({ field: "title", message: "Title is required" });
     else if (title.trim().length < 3) errors.push({ field: "title", message: "Title must be at least 3 characters" });
+    else if (title.trim().length > 200) errors.push({ field: "title", message: "Title cannot exceed 200 characters" });
   }
 
   if (!isUpdate || body.hasOwnProperty("company")) {
     if (!company?.trim()) errors.push({ field: "company", message: "Company name is required" });
+    else if (company.trim().length > 100) errors.push({ field: "company", message: "Company name cannot exceed 100 characters" });
   }
 
   if (!isUpdate || body.hasOwnProperty("location")) {
     if (!location?.trim()) errors.push({ field: "location", message: "Location is required" });
+    else if (location.trim().length > 100) errors.push({ field: "location", message: "Location cannot exceed 100 characters" });
   }
 
   if (!isUpdate || body.hasOwnProperty("type")) {
@@ -34,6 +38,9 @@ const validateOpportunityInput = (body, isUpdate = false) => {
     else if (description.trim().length < 20) {
       errors.push({ field: "description", message: "Description must be at least 20 characters" });
     }
+    else if (description.trim().length > 5000) {
+      errors.push({ field: "description", message: "Description cannot exceed 5000 characters" });
+    }
   }
 
   // Optional field validations
@@ -46,7 +53,16 @@ const validateOpportunityInput = (body, isUpdate = false) => {
     }
   }
 
+  if (contactInfo !== undefined && contactInfo !== null) {
+    if (contactInfo.length > 200) {
+      errors.push({ field: "contactInfo", message: "Contact info cannot exceed 200 characters" });
+    }
+  }
+
   if (applicationLink !== undefined && applicationLink !== null) {
+    if (applicationLink.length > 500) {
+      errors.push({ field: "applicationLink", message: "Application link cannot exceed 500 characters" });
+    }
     try {
       new URL(applicationLink);
     } catch {
@@ -64,7 +80,9 @@ const checkOwnership = (opportunity, user) => {
   );
 };
 
-
+// @desc    Get all opportunities
+// @route   GET /api/opportunities
+// @access  Private
 const getAllOpportunities = async (req, res, next) => {
   try {
     const { search, type, page = 1, limit = 10 } = req.query;
@@ -80,8 +98,9 @@ const getAllOpportunities = async (req, res, next) => {
       query.$text = { $search: search.trim() };
     }
 
-    const skip = (Math.max(1, parseInt(page)) - 1) * Math.min(50, Math.max(1, parseInt(limit)));
-    const pageSize = Math.min(50, Math.max(1, parseInt(limit)));
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(50, Math.max(1, parseInt(limit, 10) || 10));
+    const skip = (pageNum - 1) * pageSize;
 
     const [opportunities, total] = await Promise.all([
       Opportunity.find(query)
@@ -97,7 +116,7 @@ const getAllOpportunities = async (req, res, next) => {
       success: true,
       data: opportunities,
       pagination: {
-        page: parseInt(page),
+        page: pageNum,
         pages: Math.ceil(total / pageSize),
         total,
         limit: pageSize,
@@ -108,16 +127,15 @@ const getAllOpportunities = async (req, res, next) => {
   }
 };
 
-
+// @desc    Get single opportunity by ID
+// @route   GET /api/opportunities/:id
+// @access  Private
 const getOpportunityById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     if (!validateObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid opportunity ID format",
-      });
+      throw new AppError("Invalid opportunity ID format", 400);
     }
 
     const opportunity = await Opportunity.findById(id)
@@ -125,11 +143,12 @@ const getOpportunityById = async (req, res, next) => {
       .lean();
 
     if (!opportunity) {
-      return res.status(404).json({
-        success: false,
-        message: "Opportunity not found",
-        hint: "The opportunity may have been removed or the ID is incorrect",
-      });
+      throw new AppError(
+        "Opportunity not found",
+        404,
+        null,
+        "The opportunity may have been removed or the ID is incorrect"
+      );
     }
 
     res.status(200).json({
@@ -141,16 +160,18 @@ const getOpportunityById = async (req, res, next) => {
   }
 };
 
-
+// @desc    Create new opportunity
+// @route   POST /api/opportunities
+// @access  Private
 const createOpportunity = async (req, res, next) => {
   try {
     const errors = validateOpportunityInput(req.body);
     if (errors.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: errors.length === 1 ? errors[0].message : "Validation failed",
-        errors,
-      });
+      throw new AppError(
+        errors.length === 1 ? errors[0].message : "Validation failed",
+        400,
+        errors
+      );
     }
 
     const { title, company, location, type, description, deadline, contactInfo, applicationLink } = req.body;
@@ -181,42 +202,39 @@ const createOpportunity = async (req, res, next) => {
   }
 };
 
-
+// @desc    Update opportunity
+// @route   PUT /api/opportunities/:id
+// @access  Private
 const updateOpportunity = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     if (!validateObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid opportunity ID format",
-      });
+      throw new AppError("Invalid opportunity ID format", 400);
     }
 
     const errors = validateOpportunityInput(req.body, true);
     if (errors.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: errors.length === 1 ? errors[0].message : "Validation failed",
-        errors,
-      });
+      throw new AppError(
+        errors.length === 1 ? errors[0].message : "Validation failed",
+        400,
+        errors
+      );
     }
 
     const opportunity = await Opportunity.findById(id);
 
     if (!opportunity) {
-      return res.status(404).json({
-        success: false,
-        message: "Opportunity not found",
-      });
+      throw new AppError("Opportunity not found", 404);
     }
 
     if (!checkOwnership(opportunity, req.user)) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to update this opportunity",
-        hint: "Only the poster or an admin can make changes",
-      });
+      throw new AppError(
+        "Not authorized to update this opportunity",
+        403,
+        null,
+        "Only the poster or an admin can make changes"
+      );
     }
 
     const allowedFields = [
@@ -233,7 +251,13 @@ const updateOpportunity = async (req, res, next) => {
     const updates = {};
     allowedFields.forEach((field) => {
       if (req.body.hasOwnProperty(field)) {
-        updates[field] = req.body[field] === null ? null : req.body[field]?.trim?.() ?? req.body[field];
+        if (req.body[field] === null) {
+          updates[field] = null;
+        } else if (typeof req.body[field] === "string") {
+          updates[field] = req.body[field].trim();
+        } else {
+          updates[field] = req.body[field];
+        }
       }
     });
 
@@ -263,27 +287,22 @@ const deleteOpportunity = async (req, res, next) => {
     const { id } = req.params;
 
     if (!validateObjectId(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid opportunity ID format",
-      });
+      throw new AppError("Invalid opportunity ID format", 400);
     }
 
     const opportunity = await Opportunity.findById(id);
 
     if (!opportunity) {
-      return res.status(404).json({
-        success: false,
-        message: "Opportunity not found",
-      });
+      throw new AppError("Opportunity not found", 404);
     }
 
     if (!checkOwnership(opportunity, req.user)) {
-      return res.status(403).json({
-        success: false,
-        message: "Not authorized to delete this opportunity",
-        hint: "Only the poster or an admin can remove this",
-      });
+      throw new AppError(
+        "Not authorized to delete this opportunity",
+        403,
+        null,
+        "Only the poster or an admin can remove this"
+      );
     }
 
     await Opportunity.findByIdAndDelete(id);

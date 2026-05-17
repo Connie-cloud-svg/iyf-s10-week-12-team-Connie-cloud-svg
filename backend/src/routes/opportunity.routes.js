@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
-const { protect } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/auth.middleware');
 const {
   getAllOpportunities,
   getOpportunityById,
   createOpportunity,
   updateOpportunity,
   deleteOpportunity
-} = require('../controllers/opportunityController');
+} = require('../controllers/opportunity.controller');
 
 router.get('/', protect, getAllOpportunities);
 router.get('/:id', protect, getOpportunityById);
