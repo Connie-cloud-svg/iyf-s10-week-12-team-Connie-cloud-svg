@@ -162,16 +162,6 @@ Responsible for:
 * Project management
 * Workflow supervision
 
-  
-# 🔌 Integration
-
-## Authentication Integration
-
-* Frontend/backend authentication connection
-* Token storage
-* Session handling
-
- 
  ## Opportunities Integration
 
 * API integration
@@ -260,6 +250,15 @@ Responsible for:
 * Data validation
 
 ---
+## Dennis
+
+# 🔌 Integration
+
+## Authentication Integration
+
+* Frontend/backend authentication connection
+* Token storage
+* Session handling
 
 # 🌿 Git Workflow Rules
 
